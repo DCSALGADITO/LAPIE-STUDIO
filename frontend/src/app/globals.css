@@ -1,0 +1,135 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: #000000;
+    color: #FFFFFF;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 8px; }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.4); }
+  * { scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.2) transparent; }
+}
+
+@layer utilities {
+  /* Gradient text */
+  .text-gradient {
+    background: linear-gradient(135deg, #BF5AF2, #32ADE6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Gradient border via pseudo-element */
+  .border-gradient-forge {
+    position: relative;
+    background-clip: padding-box;
+    border: 1px solid transparent;
+  }
+  .border-gradient-forge::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    background: linear-gradient(135deg, #5E5CE6, #32ADE6);
+    z-index: -1;
+  }
+
+  /* Animated dashed upload border */
+  .upload-border {
+    background-image: repeating-linear-gradient(
+        0deg,
+        rgba(255,255,255,0.12),
+        rgba(255,255,255,0.12) 8px,
+        transparent 8px,
+        transparent 16px
+      ),
+      repeating-linear-gradient(
+        90deg,
+        rgba(255,255,255,0.12),
+        rgba(255,255,255,0.12) 8px,
+        transparent 8px,
+        transparent 16px
+      ),
+      repeating-linear-gradient(
+        180deg,
+        rgba(255,255,255,0.12),
+        rgba(255,255,255,0.12) 8px,
+        transparent 8px,
+        transparent 16px
+      ),
+      repeating-linear-gradient(
+        270deg,
+        rgba(255,255,255,0.12),
+        rgba(255,255,255,0.12) 8px,
+        transparent 8px,
+        transparent 16px
+      );
+    background-size: 1px 100%, 100% 1px, 1px 100%, 100% 1px;
+    background-position: 0 0, 0 0, 100% 0, 0 100%;
+    background-repeat: no-repeat;
+    transition: background-image 0.3s ease;
+  }
+
+  .upload-border-active {
+    background-image: repeating-linear-gradient(
+        0deg,
+        #5E5CE6,
+        #5E5CE6 8px,
+        transparent 8px,
+        transparent 16px
+      ),
+      repeating-linear-gradient(
+        90deg,
+        #32ADE6,
+        #32ADE6 8px,
+        transparent 8px,
+        transparent 16px
+      ),
+      repeating-linear-gradient(
+        180deg,
+        #32ADE6,
+        #32ADE6 8px,
+        transparent 8px,
+        transparent 16px
+      ),
+      repeating-linear-gradient(
+        270deg,
+        #5E5CE6,
+        #5E5CE6 8px,
+        transparent 8px,
+        transparent 16px
+      );
+  }
+
+  /* Progress bar shimmer */
+  .progress-shimmer {
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.25) 50%,
+      transparent 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 2.5s linear infinite;
+  }
+
+  /* Glow effects */
+  .glow-violet { box-shadow: 0 8px 32px rgba(191, 90, 242, 0.3); }
+  .glow-cyan   { box-shadow: 0 8px 32px rgba(100, 210, 255, 0.2); }
+}

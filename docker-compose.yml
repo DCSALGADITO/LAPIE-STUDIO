@@ -1,0 +1,47 @@
+version: '3.9'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: lapie-backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - model_cache:/root/.u2net
+      - job_results:/tmp/pixelforge
+    environment:
+      - REMBG_MODEL=${REMBG_MODEL:-u2netp}
+      - OMP_NUM_THREADS=1
+      - OPENBLAS_NUM_THREADS=1
+      - MKL_NUM_THREADS=1
+      - VECLIB_MAXIMUM_THREADS=1
+      - NUMEXPR_NUM_THREADS=1
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: lapie-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  model_cache:
+    driver: local
+  job_results:
+    driver: local
