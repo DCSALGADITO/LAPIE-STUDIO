@@ -616,7 +616,7 @@ function AnalysisContent() {
   );
 }
 
-export default function AnalysisPage() {
+export default function Analyse() {
   return (
     <Suspense fallback={
       <div className="flex min-h-screen bg-void items-center justify-center">

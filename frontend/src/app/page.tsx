@@ -10,16 +10,12 @@ import { useJobQueue } from "@/hooks/useJobQueue";
 import type { FrontendJob } from "@/hooks/useJobQueue";
 import { useRouter } from "next/navigation";
 
-export default function Home() {
+export default function Accueil() {
   const router = useRouter();
   const { jobs, submitJob, updateJob, removeJob } = useJobQueue();
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
   const [url, setUrl] = useState("");
 
-  const pendingCount = jobs.filter((j: FrontendJob) => j.status === "pending").length;
-  const processingCount = jobs.filter((j: FrontendJob) => j.status === "processing").length;
-  const completedCount = jobs.filter((j: FrontendJob) => j.status === "completed").length;
-  const isActive = processingCount > 0;
 
   const selectedJob = jobs.find((j: FrontendJob) => j.id === selectedJobId) ?? null;
 
@@ -45,7 +41,7 @@ export default function Home() {
     setHistory(newHistory);
     localStorage.setItem("lapie_history", JSON.stringify(newHistory));
 
-    router.push(`/analysis?url=${encodeURIComponent(cleanUrl)}`);
+    router.push(`/analyse?url=${encodeURIComponent(cleanUrl)}`);
   };
 
   return (
@@ -74,20 +70,7 @@ export default function Home() {
 
         {/* Stats pills (exactement comme demandé) */}
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-subtle backdrop-blur-md bg-status-pending/10">
-            <Layers size={12} className="text-status-pending" />
-            <span className="text-[11px] font-mono font-bold text-status-pending">{pendingCount}</span>
-          </div>
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-subtle backdrop-blur-md bg-status-processing/10">
-            <Zap size={12} className="text-status-processing" />
-            <span className="text-[11px] font-mono font-bold text-status-processing">{processingCount}</span>
-          </div>
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-subtle backdrop-blur-md bg-status-completed/10">
-            <Cpu size={12} className="text-status-completed" />
-            <span className="text-[11px] font-mono font-bold text-status-completed">{completedCount}</span>
-          </div>
-          
-          <div className="w-px h-4 bg-subtle mx-1"></div>
+
           
           <div className="flex items-center gap-2 px-3 py-1.5 bg-elevated/50 backdrop-blur-md rounded-full border border-subtle hover:bg-elevated transition-colors cursor-default">
             <Server size={12} className="text-ink-muted" />
@@ -149,7 +132,7 @@ export default function Home() {
                     const newHistory = [h, ...history.filter(item => item !== h)].slice(0, 5);
                     setHistory(newHistory);
                     localStorage.setItem("lapie_history", JSON.stringify(newHistory));
-                    router.push(`/analysis?url=${encodeURIComponent(h)}`);
+                    router.push(`/analyse?url=${encodeURIComponent(h)}`);
                   }}
                   className="px-3 py-1.5 bg-elevated rounded-lg text-xs font-mono text-ink-secondary border border-subtle hover:bg-white/50 transition-colors"
                 >
