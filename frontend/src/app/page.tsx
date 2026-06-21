@@ -2,11 +2,13 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Zap, Server, GitBranch, Layers, Cpu, Inbox, Bird, Search, ArrowRight } from "lucide-react";
+import { Zap, Server, GitBranch, Layers, Cpu, Inbox, Bird, Search, ArrowRight, User, History, X, LogOut } from "lucide-react";
 import { UploadZone } from "@/components/UploadZone";
 import { JobCard } from "@/components/JobCard";
 import { ResultViewer } from "@/components/ResultViewer";
+import { AuthModal } from "@/components/AuthModal";
 import { useJobQueue } from "@/hooks/useJobQueue";
+import { useHistory } from "@/hooks/useHistory";
 import type { FrontendJob } from "@/hooks/useJobQueue";
 import { useRouter } from "next/navigation";
 
@@ -15,18 +17,12 @@ export default function Accueil() {
   const { jobs, submitJob, updateJob, removeJob } = useJobQueue();
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
   const [url, setUrl] = useState("");
-
-
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const completedCount = jobs.filter((j: FrontendJob) => j.status === "completed").length;
   const selectedJob = jobs.find((j: FrontendJob) => j.id === selectedJobId) ?? null;
 
-  const [history, setHistory] = useState<string[]>([]);
-
-  useEffect(() => {
-    const saved = localStorage.getItem("lapie_history");
-    if (saved) {
-      try { setHistory(JSON.parse(saved)); } catch (e) {}
-    }
-  }, []);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const { history, addHistory, user, supabase } = useHistory();
 
   const handleAnalyze = (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,10 +33,7 @@ export default function Accueil() {
         cleanUrl = 'https://' + cleanUrl;
     }
 
-    const newHistory = [cleanUrl, ...history.filter(h => h !== cleanUrl)].slice(0, 5);
-    setHistory(newHistory);
-    localStorage.setItem("lapie_history", JSON.stringify(newHistory));
-
+    addHistory(cleanUrl);
     router.push(`/analyse?url=${encodeURIComponent(cleanUrl)}`);
   };
 
@@ -70,13 +63,30 @@ export default function Accueil() {
 
         {/* Stats pills (exactement comme demandé) */}
         <div className="flex items-center gap-3">
-
+          <button 
+            onClick={() => setIsHistoryOpen(true)}
+            className="flex items-center gap-2 px-4 py-1.5 bg-transparent border border-black rounded-full text-black text-xs font-semibold hover:bg-black/5 transition-colors"
+          >
+            <History size={14} />
+            Analyses effectuées
+          </button>
           
           <div className="flex items-center gap-2 px-3 py-1.5 bg-elevated/50 backdrop-blur-md rounded-full border border-subtle hover:bg-elevated transition-colors cursor-default">
             <Server size={12} className="text-ink-muted" />
             <span className="text-[11px] font-medium text-ink-secondary">API</span>
             <span className="w-2 h-2 rounded-full bg-status-completed shadow-[0_0_8px_rgba(50,215,75,0.6)] animate-pulse"></span>
           </div>
+
+          <button 
+            onClick={() => {
+              if (user) supabase.auth.signOut();
+              else setIsAuthModalOpen(true);
+            }}
+            className="flex items-center justify-center w-8 h-8 rounded-full bg-elevated/50 border border-subtle hover:bg-elevated transition-colors"
+            title={user ? "Se déconnecter" : "Se connecter"}
+          >
+            {user ? <LogOut size={14} className="text-ink-secondary" /> : <User size={14} className="text-ink-secondary" />}
+          </button>
         </div>
       </motion.header>
 
@@ -129,9 +139,7 @@ export default function Accueil() {
                 <button
                   key={i}
                   onClick={() => {
-                    const newHistory = [h, ...history.filter(item => item !== h)].slice(0, 5);
-                    setHistory(newHistory);
-                    localStorage.setItem("lapie_history", JSON.stringify(newHistory));
+                    addHistory(h);
                     router.push(`/analyse?url=${encodeURIComponent(h)}`);
                   }}
                   className="px-3 py-1.5 bg-elevated rounded-lg text-xs font-mono text-ink-secondary border border-subtle hover:bg-white/50 transition-colors"
@@ -220,6 +228,12 @@ export default function Accueil() {
           />
         )}
       </AnimatePresence>
+
+      <AuthModal 
+        isOpen={isAuthModalOpen} 
+        onClose={() => setIsAuthModalOpen(false)} 
+        onSuccess={() => setIsAuthModalOpen(false)} 
+      />
     </div>
   );
 }

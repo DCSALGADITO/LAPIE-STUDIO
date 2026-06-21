@@ -7,15 +7,17 @@ import {
   Loader2, Palette, Type, Image as ImageIcon, Download,
   ArrowLeft, Bird, Server, Zap, Layers, Cpu, Sparkles, Copy, CheckCheck,
   Globe, Shield, Layout, Smartphone, Maximize2, CheckCircle2, XCircle,
-  AlertTriangle, Eye, Code, MousePointer, Square,
+  AlertTriangle, Eye, Code, MousePointer, Square, User, History, X, LogOut
 } from "lucide-react";
 import {
   scrapeUrl, ScrapeResponse, ColorInfo, FontInfo,
   SeoInfo, AccessibilityInfo, ComponentInfo, SpacingInfo, ResponsiveInfo,
 } from "@/lib/api";
 import { useJobQueue } from "@/hooks/useJobQueue";
+import { useHistory } from "@/hooks/useHistory";
 import type { FrontendJob } from "@/hooks/useJobQueue";
 import { ColorHarmonyPanel } from "@/components/ColorHarmonyPanel";
+import { AuthModal } from "@/components/AuthModal";
 import jsPDF from "jspdf";
 
 // ────────────────────────── Role Labels ────────────────────────
@@ -183,11 +185,9 @@ function AnalysisContent() {
   const [error, setError] = useState<string | null>(null);
   const [isExporting, setIsExporting] = useState(false);
   const [copiedHex, setCopiedHex] = useState<string | null>(null);
-
-  const pendingCount = jobs.filter((j: FrontendJob) => j.status === "pending").length;
-  const processingCount = jobs.filter((j: FrontendJob) => j.status === "processing").length;
-  const completedCount = jobs.filter((j: FrontendJob) => j.status === "completed").length;
-
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const { history, addHistory, user, supabase } = useHistory();
   useEffect(() => {
     if (!urlParam) { router.push("/"); return; }
     const analyze = async () => {
@@ -241,25 +241,31 @@ function AnalysisContent() {
           <Bird size={24} className="text-ink-primary" fill="currentColor" />
           <p className="text-[15px] font-bold text-ink-primary tracking-tight">LAPIE Studio</p>
         </div>
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-subtle bg-status-pending/10">
-            <Layers size={11} className="text-status-pending" />
-            <span className="text-[11px] font-mono font-bold text-status-pending">{pendingCount}</span>
-          </div>
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-subtle bg-status-processing/10">
-            <Zap size={11} className="text-status-processing" />
-            <span className="text-[11px] font-mono font-bold text-status-processing">{processingCount}</span>
-          </div>
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-subtle bg-status-completed/10">
-            <Cpu size={11} className="text-status-completed" />
-            <span className="text-[11px] font-mono font-bold text-status-completed">{completedCount}</span>
-          </div>
-          <div className="w-px h-4 bg-subtle mx-1" />
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-subtle bg-elevated/50">
+        <div className="flex items-center gap-3">
+          <button 
+            onClick={() => setIsHistoryOpen(true)}
+            className="flex items-center gap-2 px-4 py-1.5 bg-transparent border border-black rounded-full text-black text-xs font-semibold hover:bg-black/5 transition-colors"
+          >
+            <History size={14} />
+            Analyses effectuées
+          </button>
+          
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-subtle bg-elevated/50 cursor-default">
             <Server size={11} className="text-ink-muted" />
             <span className="text-[11px] text-ink-secondary">API</span>
             <span className="w-2 h-2 rounded-full bg-status-completed animate-pulse" />
           </div>
+
+          <button 
+            onClick={() => {
+              if (user) supabase.auth.signOut();
+              else setIsAuthModalOpen(true);
+            }}
+            className="flex items-center justify-center w-8 h-8 rounded-full bg-elevated/50 border border-subtle hover:bg-elevated transition-colors"
+            title={user ? "Se déconnecter" : "Se connecter"}
+          >
+            {user ? <LogOut size={14} className="text-ink-secondary" /> : <User size={14} className="text-ink-secondary" />}
+          </button>
         </div>
       </header>
 
@@ -612,6 +618,70 @@ function AnalysisContent() {
           </AnimatePresence>
         </div>
       </main>
+
+      {/* History Drawer */}
+      <AnimatePresence>
+        {isHistoryOpen && (
+          <>
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsHistoryOpen(false)}
+              className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40"
+            />
+            <motion.div
+              initial={{ x: "100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 200 }}
+              className="fixed top-0 right-0 bottom-0 w-[350px] bg-white border-l border-subtle shadow-2xl z-50 flex flex-col"
+            >
+              <div className="flex items-center justify-between p-6 border-b border-subtle">
+                <h2 className="text-lg font-bold text-ink-primary flex items-center gap-2">
+                  <History size={18} /> Historique
+                </h2>
+                <button 
+                  onClick={() => setIsHistoryOpen(false)}
+                  className="p-2 hover:bg-elevated rounded-full transition-colors text-ink-muted hover:text-ink-primary"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+              <div className="flex-1 overflow-y-auto p-6">
+                {history.length > 0 ? (
+                  <div className="space-y-2">
+                    {history.map((h, i) => (
+                      <button
+                        key={i}
+                        onClick={() => {
+                          addHistory(h);
+                          setIsHistoryOpen(false);
+                          router.push(`/analyse?url=${encodeURIComponent(h)}`);
+                        }}
+                        className="w-full text-left px-4 py-3 bg-elevated/50 hover:bg-elevated rounded-xl border border-subtle hover:border-black/20 transition-all group"
+                      >
+                        <p className="text-sm font-medium text-ink-primary truncate">{h.replace(/^https?:\/\//, '')}</p>
+                        <p className="text-[10px] font-mono text-ink-muted mt-1 opacity-0 group-hover:opacity-100 transition-opacity">Analyser à nouveau →</p>
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-12">
+                    <p className="text-sm text-ink-muted">Aucune analyse récente.</p>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      <AuthModal 
+        isOpen={isAuthModalOpen} 
+        onClose={() => setIsAuthModalOpen(false)} 
+        onSuccess={() => setIsAuthModalOpen(false)} 
+      />
     </div>
   );
 }

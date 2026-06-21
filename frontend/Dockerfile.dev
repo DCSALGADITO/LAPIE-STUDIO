@@ -1,0 +1,17 @@
+FROM node:20-alpine
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install dependencies (runs inside the container during build)
+RUN npm install
+
+# Copy the rest of the code
+COPY . .
+
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV NODE_ENV=development
+ENV CHOKIDAR_USEPOLLING=true
+
+CMD ["npm", "run", "dev"]
