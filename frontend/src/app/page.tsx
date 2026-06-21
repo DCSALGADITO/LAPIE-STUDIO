@@ -67,7 +67,6 @@ export default function Accueil() {
             onClick={() => setIsHistoryOpen(true)}
             className="flex items-center gap-2 px-4 py-1.5 bg-transparent border border-black rounded-full text-black text-xs font-semibold hover:bg-black/5 transition-colors"
           >
-            <History size={14} />
             Analyses effectuées
           </button>
           
@@ -132,23 +131,7 @@ export default function Accueil() {
             </div>
           </form>
 
-          {history.length > 0 && (
-            <div className="max-w-2xl mx-auto mt-6 flex flex-wrap items-center justify-center gap-2">
-              <span className="text-xs text-ink-muted mr-2">Récentes :</span>
-              {history.map((h, i) => (
-                <button
-                  key={i}
-                  onClick={() => {
-                    addHistory(h);
-                    router.push(`/analyse?url=${encodeURIComponent(h)}`);
-                  }}
-                  className="px-3 py-1.5 bg-elevated rounded-lg text-xs font-mono text-ink-secondary border border-subtle hover:bg-white/50 transition-colors"
-                >
-                  {h.replace(/^https?:\/\//, '')}
-                </button>
-              ))}
-            </div>
-          )}
+          {/* Removed recent history block since we have the drawer now */}
         </motion.section>
 
         {/* 2. Zones de traitement (SVG / Remove BG) */}
@@ -226,6 +209,64 @@ export default function Accueil() {
             job={selectedJob}
             onClose={() => setSelectedJobId(null)}
           />
+        )}
+      </AnimatePresence>
+
+      {/* History Drawer */}
+      <AnimatePresence>
+        {isHistoryOpen && (
+          <>
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsHistoryOpen(false)}
+              className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40"
+            />
+            <motion.div
+              initial={{ x: "100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 200 }}
+              className="fixed top-0 right-0 bottom-0 w-[350px] bg-white border-l border-subtle shadow-2xl z-50 flex flex-col"
+            >
+              <div className="flex items-center justify-between p-6 border-b border-subtle">
+                <h2 className="text-lg font-bold text-ink-primary flex items-center gap-2">
+                  <History size={18} /> Historique
+                </h2>
+                <button 
+                  onClick={() => setIsHistoryOpen(false)}
+                  className="p-2 hover:bg-elevated rounded-full transition-colors text-ink-muted hover:text-ink-primary"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+              <div className="flex-1 overflow-y-auto p-6">
+                {history.length > 0 ? (
+                  <div className="space-y-2">
+                    {history.map((h, i) => (
+                      <button
+                        key={i}
+                        onClick={() => {
+                          addHistory(h);
+                          setIsHistoryOpen(false);
+                          router.push(`/analyse?url=${encodeURIComponent(h)}`);
+                        }}
+                        className="w-full text-left px-4 py-3 bg-elevated/50 hover:bg-elevated rounded-xl border border-subtle hover:border-black/20 transition-all group"
+                      >
+                        <p className="text-sm font-medium text-ink-primary truncate">{h.replace(/^https?:\/\//, '')}</p>
+                        <p className="text-[10px] font-mono text-ink-muted mt-1 opacity-0 group-hover:opacity-100 transition-opacity">Analyser à nouveau →</p>
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-12">
+                    <p className="text-sm text-ink-muted">Aucune analyse récente.</p>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          </>
         )}
       </AnimatePresence>
 

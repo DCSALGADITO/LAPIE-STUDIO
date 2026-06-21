@@ -246,7 +246,6 @@ function AnalysisContent() {
             onClick={() => setIsHistoryOpen(true)}
             className="flex items-center gap-2 px-4 py-1.5 bg-transparent border border-black rounded-full text-black text-xs font-semibold hover:bg-black/5 transition-colors"
           >
-            <History size={14} />
             Analyses effectuées
           </button>
           
@@ -316,7 +315,6 @@ function AnalysisContent() {
                   const daInfo = DA_DESCRIPTIONS[result.da_style] || DA_DESCRIPTIONS["Indéterminé"];
                   return (
                     <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-forge-violet to-forge-cyan p-8 text-white shadow-glow-violet">
-                      <div className="absolute inset-0 bg-black/20" />
                       <div className="relative z-10">
                         <div className="flex items-start justify-between gap-4 flex-wrap">
                           <div className="flex-1">
@@ -406,13 +404,13 @@ function AnalysisContent() {
                         ))}
                       </div>
                       <div className="flex flex-wrap gap-3">
-                        {result.colors.map((c: ColorInfo, idx: number) => {
+                        {result.colors.slice(0, 3).map((c: ColorInfo, idx: number) => {
                           const roleInfo = ROLE_LABELS[c.role];
                           const isCopied = copiedHex === c.hex;
                           return (
                             <motion.button key={idx} whileHover={{ scale: 1.03, y: -1 }} whileTap={{ scale: 0.97 }}
                               onClick={() => copyToClipboard(c.hex)}
-                              className="group flex items-center gap-3 px-4 py-3 rounded-2xl border border-subtle bg-white hover:shadow-md transition-all text-left">
+                              className="group flex items-center gap-3 px-4 py-3 rounded-2xl border-2 border-forge-violet/40 bg-white hover:shadow-md hover:border-forge-violet/80 transition-all text-left">
                               <div className="w-10 h-10 rounded-xl shadow-sm flex-shrink-0 ring-1 ring-black/5" style={{ backgroundColor: c.hex }} />
                               <div>
                                 <p className="text-sm font-mono font-bold text-ink-primary uppercase">{c.hex}</p>
@@ -512,104 +510,6 @@ function AnalysisContent() {
                   </div>
                 </section>
 
-                {/* ── Components ── */}
-                <section className="bg-elevated/60 backdrop-blur-xl border border-subtle rounded-3xl p-7 shadow-sm">
-                  <div className="flex items-center gap-3 mb-5">
-                    <div className="p-2 bg-forge-violet/10 rounded-xl"><Layout size={18} className="text-forge-violet" /></div>
-                    <div>
-                      <h2 className="text-lg font-bold text-ink-primary">Composants UI Détectés</h2>
-                      <p className="text-xs text-ink-muted">Éléments interactifs et structure de la page</p>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-3 md:grid-cols-5 gap-3 mb-5">
-                    <StatCard icon={MousePointer} value={result.components.buttons} label="Boutons" color="text-forge-violet" />
-                    <StatCard icon={Square} value={result.components.forms} label="Formulaires" color="text-forge-cyan" />
-                    <StatCard icon={Code} value={result.components.inputs} label="Champs" color="text-forge-apple" />
-                    <StatCard icon={Layout} value={result.components.cards_estimate} label="Cards" color="text-status-processing" />
-                    <StatCard icon={Eye} value={result.components.modals_estimate} label="Modales" color="text-ink-secondary" />
-                  </div>
-
-                  <div className="flex flex-wrap gap-2">
-                    <CheckBadge ok={result.components.has_header} label="Header" />
-                    <CheckBadge ok={result.components.has_footer} label="Footer" />
-                    <CheckBadge ok={result.components.has_hero} label="Section Hero" />
-                  </div>
-                </section>
-
-                {/* ── Spacing & Grid ── */}
-                <section className="bg-elevated/60 backdrop-blur-xl border border-subtle rounded-3xl p-7 shadow-sm">
-                  <div className="flex items-center gap-3 mb-5">
-                    <div className="p-2 bg-forge-cyan/10 rounded-xl"><Maximize2 size={18} className="text-forge-cyan" /></div>
-                    <div>
-                      <h2 className="text-lg font-bold text-ink-primary">Espacements & Grid</h2>
-                      <p className="text-xs text-ink-muted">Système de mise en page et valeurs récurrentes</p>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
-                    <div className="p-4 bg-white/50 rounded-2xl border border-subtle">
-                      <p className="text-[10px] font-mono text-ink-muted mb-1 uppercase tracking-wider">Conteneur max</p>
-                      <p className="text-xl font-bold text-ink-primary">{result.spacing.max_container_width || "Non détecté"}</p>
-                    </div>
-                    <div className="p-4 bg-white/50 rounded-2xl border border-subtle col-span-2">
-                      <p className="text-[10px] font-mono text-ink-muted mb-2 uppercase tracking-wider">Valeurs d'espacement fréquentes</p>
-                      <div className="flex flex-wrap gap-2">
-                        {result.spacing.common_spacings.length > 0
-                          ? result.spacing.common_spacings.map((sp, i) => (
-                              <span key={i} className="px-2.5 py-1 bg-elevated rounded-lg text-xs font-mono text-ink-secondary border border-subtle">{sp}</span>
-                            ))
-                          : <span className="text-xs text-ink-muted">Non détectées</span>
-                        }
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex gap-2">
-                    <CheckBadge ok={result.spacing.uses_flexbox} label="Flexbox" />
-                    <CheckBadge ok={result.spacing.uses_grid} label="CSS Grid" />
-                  </div>
-                </section>
-
-                {/* ── Responsive ── */}
-                <section className="bg-elevated/60 backdrop-blur-xl border border-subtle rounded-3xl p-7 shadow-sm">
-                  <div className="flex items-center gap-3 mb-5">
-                    <div className="p-2 bg-status-completed/10 rounded-xl"><Smartphone size={18} className="text-status-completed" /></div>
-                    <div>
-                      <h2 className="text-lg font-bold text-ink-primary">Responsive Design</h2>
-                      <p className="text-xs text-ink-muted">Breakpoints et adaptabilité mobile</p>
-                    </div>
-                  </div>
-
-                  {result.responsive.breakpoints.length > 0 ? (
-                    <div className="mb-5">
-                      <p className="text-[10px] font-mono text-ink-muted mb-3 uppercase tracking-wider">Breakpoints détectés</p>
-                      <div className="flex items-end gap-1 h-16 bg-white/30 rounded-2xl p-3 border border-subtle">
-                        {result.responsive.breakpoints.map((bp, i) => {
-                          const val = parseFloat(bp);
-                          const max = parseFloat(result.responsive.breakpoints[result.responsive.breakpoints.length - 1]);
-                          const h = Math.max(20, (val / max) * 100);
-                          return (
-                            <div key={i} className="flex flex-col items-center gap-1 flex-1">
-                              <div className="w-full rounded-t bg-forge-violet/50" style={{ height: `${h}%` }} />
-                              <span className="text-[9px] font-mono text-ink-muted truncate w-full text-center">{bp}</span>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="mb-5 p-4 bg-status-processing/5 border border-status-processing/15 rounded-2xl flex items-center gap-3">
-                      <AlertTriangle size={16} className="text-status-processing flex-shrink-0" />
-                      <p className="text-sm text-ink-secondary">Aucun breakpoint détecté dans les CSS externes. Le site utilise peut-être du CSS-in-JS ou des classes utilitaires.</p>
-                    </div>
-                  )}
-
-                  <div className="flex gap-2">
-                    <CheckBadge ok={result.responsive.has_media_queries} label="Media queries" />
-                    <CheckBadge ok={result.responsive.viewport_units} label="Unités viewport (vw/vh)" />
-                  </div>
-                </section>
 
 
 
